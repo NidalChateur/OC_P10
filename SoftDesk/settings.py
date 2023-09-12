@@ -151,7 +151,7 @@ MEDIA_ROOT = BASE_DIR / "media/"
 # Django Rest Framework pagination
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
-    "PAGE_SIZE": 100,
+    "PAGE_SIZE": 6,
     # to be able to use the JWT authentication class
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
