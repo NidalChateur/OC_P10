@@ -13,10 +13,10 @@ class User(AbstractUser):
     WIDTH = 200
 
     # related names added to avoid conflicts with auth.User.groups and auth.User.user_permissions
-    groups = models.ManyToManyField(Group, related_name="custom_user_set")
-    user_permissions = models.ManyToManyField(
-        Permission, related_name="custom_user_set"
-    )
+    # groups = models.ManyToManyField(Group, related_name="custom_user_set")
+    # user_permissions = models.ManyToManyField(
+    #     Permission, related_name="custom_user_set"
+    # )
 
     birthdate = models.DateField(
         verbose_name="Date de naissance", null=True, blank=True
@@ -51,6 +51,7 @@ class User(AbstractUser):
 
     def age(self) -> int:
         """return the user age"""
+        
         today = date.today()
         age = (
             today.year

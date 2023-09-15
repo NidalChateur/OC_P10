@@ -10,16 +10,18 @@ from PIL import Image
 class Project(models.Model):
     """Project model"""
 
+    # ne pas le mettre ici
     contributors = models.ManyToManyField(
         settings.AUTH_USER_MODEL, through="Contributor", related_name="contributions"
     )
     # project creator
     author = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
     name = models.CharField(
         max_length=128, verbose_name="Nom du projet", null=True, blank=True
     )
     description = models.TextField(max_length=2048, blank=True, null=True)
-    type = models.CharField(
+    project_type = models.CharField(
         max_length=128,
         verbose_name="Type du projet",
         choices=(
@@ -34,11 +36,15 @@ class Project(models.Model):
     time_created = models.DateTimeField(auto_now_add=True)
 
 
+# UserProject
+#   user
+#   project
 class Contributor(models.Model):
     contributor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     # champ commentaire
     contribution = models.CharField(max_length=255, blank=True)
 
-    class Meta:
-        unique_together = ("contributor", "project")
+# a retirer
+    # class Meta:
+    #     unique_together = ("contributor", "project")
