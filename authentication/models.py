@@ -51,7 +51,7 @@ class User(AbstractUser):
 
     def age(self) -> int:
         """return the user age"""
-        
+
         today = date.today()
         age = (
             today.year
@@ -61,6 +61,7 @@ class User(AbstractUser):
 
         return age
 
+    # ajouter si age <= 15 : can_data_be_shared=False
     def save(self, *args, **kwargs):
         """Override the save method with the resize_image"""
 
