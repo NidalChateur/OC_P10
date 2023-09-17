@@ -16,8 +16,8 @@ class UserViewset(ModelViewSet):
     permission_classes = [IsOwnerOrReadOnly]
 
     def get_queryset(self):
-        # queryset = get_user_model().objects.filter(can_data_be_shared=True)
-        queryset = get_user_model().objects.all()
+        queryset = get_user_model().objects.filter(can_data_be_shared=True)
+        # queryset = get_user_model().objects.all()
         username = self.request.GET.get("username")
         if username:
             queryset = queryset.filter(username=username)

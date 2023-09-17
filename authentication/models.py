@@ -8,8 +8,6 @@ from datetime import date
 
 
 class User(AbstractUser):
-    """user model"""
-
     WIDTH = 200
 
     birthdate = models.DateField(
@@ -31,6 +29,9 @@ class User(AbstractUser):
         choices=((True, "Oui"), (False, "Non")),
     )
     image = models.ImageField(verbose_name="Photo de profil", blank=True, null=True)
+    # vue admin django http://127.0.0.1:8000/admin suffisant ?
+    # créer une vue admin et permettre à l'admin de désactiver l'utilisateur
+    # active=models.BooleanField(default=True)
 
     def __str__(self):
         return f"{str(self.username).capitalize()}"

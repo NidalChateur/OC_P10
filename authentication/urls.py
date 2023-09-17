@@ -9,6 +9,5 @@ router.register("user", UserViewset, basename="user")
 
 
 urlpatterns = [
-    path("api-auth/", include("rest_framework.urls")),
     path("api/", include(router.urls)),
 ]
