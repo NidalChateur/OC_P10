@@ -12,10 +12,15 @@ class User(AbstractUser):
 
     WIDTH = 200
 
+    # related names added to avoid conflicts with auth.User.groups and auth.User.user_permissions
+    # groups = models.ManyToManyField(Group, related_name="custom_user_set")
+    # user_permissions = models.ManyToManyField(
+    #     Permission, related_name="custom_user_set"
+    # )
+
     birthdate = models.DateField(
-        verbose_name="Date de naissance",
+        verbose_name="Date de naissance", null=True, blank=True
     )
-    # if "can_be_contacted" is False : the "email" field is hidden
     can_be_contacted = models.BooleanField(
         null=True,
         blank=True,
@@ -23,7 +28,6 @@ class User(AbstractUser):
         choices=((True, "Oui"), (False, "Non")),
     )
     # can_data_be_shared is True only if age > 15
-    # if "can_data_be_shared" is False : the user data are hidden
     can_data_be_shared = models.BooleanField(
         null=True,
         blank=True,
@@ -55,6 +59,19 @@ class User(AbstractUser):
             # Save
             image.save(self.image.path)
 
+    def age(self) -> int:
+        """return the user age"""
+
+        today = date.today()
+        age = (
+            today.year
+            - self.birthdate.year
+            - ((today.month, today.day) < (self.birthdate.month, self.birthdate.day))
+        )
+
+        return age
+
+    # ajouter si age <= 15 : can_data_be_shared=False
     def save(self, *args, **kwargs):
         """Override the save method with the resize_image"""
 
