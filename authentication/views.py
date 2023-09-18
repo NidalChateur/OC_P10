@@ -15,18 +15,6 @@ from authentication.serializers import (
 from authentication.permissions import IsOwnerOrReadOnly, IsAdminAuthenticated
 
 
-class MultipleSerializerMixin:
-    """utilise serializer detail si l'utilisateur consulte la vue de détail"""
-
-    detail_serializer_class = None
-
-    def get_serializer_class(self):
-        # retrieve est le détail
-        if self.action == "retrieve" and self.detail_serializer_class is not None:
-            return self.detail_serializer_class
-        return super().get_serializer_class()
-
-
 class UserViewset(ModelViewSet):
     serializer_class = UserNoPasswordSerializer
     permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]

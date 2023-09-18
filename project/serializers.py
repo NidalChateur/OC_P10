@@ -17,6 +17,7 @@ class UserContributorSerializer(serializers.ModelSerializer):
 
 
 class ProjectListSerializer(serializers.ModelSerializer):
+    contributors = serializers.SerializerMethodField()
     author = serializers.SerializerMethodField()
 
     class Meta:
@@ -29,11 +30,18 @@ class ProjectListSerializer(serializers.ModelSerializer):
 
         return serializer.data
 
+    def get_contributors(self, instance):
+        queryset = instance.contributors.all()
+        serializer = UserContributorSerializer(queryset, many=True)
+
+        return serializer.data
+
     def create(self, validated_data):
         request = self.context.get("request")
         if request and request.user and request.user.is_authenticated:
             validated_data["author"] = request.user
-
+            if Project.objects.filter(name=validated_data["name"]):
+                raise serializers.ValidationError("Un projet avec ce nom existe déjà.")
             project = Project(**validated_data)
             project.save()
 
