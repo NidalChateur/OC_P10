@@ -7,19 +7,32 @@ from django.utils.text import slugify
 from PIL import Image
 
 
+# retirer null=True et blank=True
 class Project(models.Model):
     author = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         verbose_name="Auteur",
+        null=True,
+        blank=True,
     )
     contributors = models.ManyToManyField(
-        settings.AUTH_USER_MODEL, through="Contributor", related_name="contributions"
+        settings.AUTH_USER_MODEL,
+        through="Contributor",
+        related_name="contributions",
+        blank=True,
     )
     name = models.CharField(
-        max_length=256, verbose_name="Nom du projet", null=True, blank=True
+        max_length=256,
+        verbose_name="Nom du projet",
+        null=True,
+        blank=True,
     )
-    description = models.TextField(max_length=5000, blank=True, null=True)
+    description = models.TextField(
+        max_length=5000,
+        blank=True,
+        null=True,
+    )
     category = models.CharField(
         max_length=128,
         verbose_name="Catégorie",

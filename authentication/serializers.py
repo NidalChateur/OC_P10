@@ -1,4 +1,6 @@
+# from dataclasses import field
 from datetime import date
+
 # from dataclasses import fields
 
 # from pyexpat import model
@@ -7,6 +9,93 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
+
+
+class AdminUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            "id",
+            "username",
+            "email",
+            "can_be_contacted",
+            "first_name",
+            "last_name",
+            "birthdate",
+            "can_data_be_shared",
+            "image",
+            "is_active",
+            "is_staff",
+            "is_superuser",
+        )
+
+    def create(self, validated_data):
+        default_password = "00000000pw"
+        user = User.objects.create_user(**validated_data)
+        user.set_password(default_password)
+        user.save()
+
+        return user
+
+
+class UserNoPasswordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            "id",
+            "username",
+            "email",
+            "can_be_contacted",
+            "first_name",
+            "last_name",
+            "birthdate",
+            "can_data_be_shared",
+            "image",
+        )
+
+    def to_representation(self, instance):
+        """hide the user's email if the "can_be_contacted" field is False"""
+
+        data = super().to_representation(instance)
+        request = self.context.get("request")
+        if request and request.user.username != instance.username:
+            if not instance.can_be_contacted:
+                data.pop("email")
+
+        return data
+
+    def age(self, birthdate) -> int:
+        """return the user age"""
+
+        today = date.today()
+        age = (
+            today.year
+            - birthdate.year
+            - ((today.month, today.day) < (birthdate.month, birthdate.day))
+        )
+
+        return age
+
+    def validate(self, data):
+        if data["birthdate"]:
+            age = self.age(data["birthdate"])
+            if age and age <= 15 and data["can_data_be_shared"]:
+                raise serializers.ValidationError(
+                    "Votre age doit être supérieur à 15ans pour partager vos données."
+                )
+        else:
+            data["can_data_be_shared"] = False
+            data["can_be_contacted"] = False
+
+        return data
+
+    def create(self, validated_data):
+        default_password = "00000000pw"
+        user = User.objects.create_user(**validated_data)
+        user.set_password(default_password)
+        user.save()
+
+        return user
 
 
 # le mot de ne s'envoi pas dans une requête http (manière non sécurisée à revoir)
@@ -74,21 +163,27 @@ class UserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "Les deux mots de passe ne correspondent pas."
             )
+        if data["birthdate"]:
+            age = self.age(data["birthdate"])
+            if age and age <= 15 and data["can_data_be_shared"]:
+                raise serializers.ValidationError(
+                    "Votre age doit être supérieur à 15ans pour partager vos données."
+                )
+        else:
+            data["can_data_be_shared"] = False
+            data["can_be_contacted"] = False
 
-        age = self.age(data["birthdate"])
-        if age and age <= 15 and data["can_data_be_shared"]:
-            raise serializers.ValidationError(
-                "Votre age doit être supérieur à 15ans pour partager vos données."
-            )
         return data
 
     def to_representation(self, instance):
         """hide the user's email if the "can_be_contacted" field is False"""
 
         data = super().to_representation(instance)
-        if not instance.can_be_contacted:
-            data.pop("email")
-        data.pop("password")
+        request = self.context.get("request")
+        if request and request.user.username != instance.username:
+            data.pop("password")
+            if not instance.can_be_contacted:
+                data.pop("email")
 
         return data
 
@@ -97,5 +192,5 @@ class UserSerializer(serializers.ModelSerializer):
             "password_confirm"
         )  # Retirez le champ de confirmation avant la création
         user = User.objects.create_user(**validated_data)
-        
+
         return user

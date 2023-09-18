@@ -7,11 +7,14 @@ from PIL import Image
 from datetime import date
 
 
+# retirer null=True et blank=True
 class User(AbstractUser):
     WIDTH = 200
 
     birthdate = models.DateField(
         verbose_name="Date de naissance",
+        null=True,
+        blank=True,
     )
     # if "can_be_contacted" is False : the "email" field is hidden
     can_be_contacted = models.BooleanField(
@@ -28,7 +31,11 @@ class User(AbstractUser):
         verbose_name="Partager ses données",
         choices=((True, "Oui"), (False, "Non")),
     )
-    image = models.ImageField(verbose_name="Photo de profil", blank=True, null=True)
+    image = models.ImageField(
+        verbose_name="Photo de profil",
+        null=True,
+        blank=True,
+    )
     # vue admin django http://127.0.0.1:8000/admin suffisant ?
     # créer une vue admin et permettre à l'admin de désactiver l'utilisateur
     # active=models.BooleanField(default=True)
