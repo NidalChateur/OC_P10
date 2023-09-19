@@ -21,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-6n(l$lp15j1bkzg^e(gipp65z@6()68bia59#h_)4y0eb8#b@-"
+SECRET_KEY = "django-insecure-h84s4+-*f&+(dc1zskhdt2sk=egeecbyz%iv34ff721w5pr4ji"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -59,7 +59,6 @@ ROOT_URLCONF = "SoftDesk.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        # add ./templates path
         "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
@@ -151,15 +150,19 @@ MEDIA_ROOT = BASE_DIR / "media/"
 # Django Rest Framework pagination
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
-    "PAGE_SIZE": 6,
-    # to be able to use the JWT authentication class
+    "PAGE_SIZE": 100,
     "DEFAULT_AUTHENTICATION_CLASSES": (
+        # to use the JWT authentication class
         "rest_framework_simplejwt.authentication.JWTAuthentication",
+        # to use authentication class in viewset
+        "rest_framework.authentication.SessionAuthentication",
     ),
 }
 
 # life time token configuration
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    # "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    # "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }

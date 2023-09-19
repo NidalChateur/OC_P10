@@ -1,3 +1,4 @@
+from unicodedata import category
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.conf import settings
 from django.db import models
@@ -7,24 +8,53 @@ from django.utils.text import slugify
 from PIL import Image
 
 
+# retirer null=True et blank=True
 class Project(models.Model):
+<<<<<<< HEAD
     """Project model"""
 
     author = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         verbose_name="Responsable",
+=======
+    author = models.ForeignKey(
+        to=settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        verbose_name="Auteur",
+        null=True,
+        blank=True,
+>>>>>>> dev2
     )
     contributors = models.ManyToManyField(
-        settings.AUTH_USER_MODEL, through="Contributor", related_name="contributions"
+        settings.AUTH_USER_MODEL,
+        through="Contributor",
+        related_name="contributions",
+        blank=True,
     )
     name = models.CharField(
+<<<<<<< HEAD
         max_length=256, verbose_name="Nom du projet", null=True, blank=True
     )
     description = models.TextField(max_length=5000, blank=True, null=True)
     project_type = models.CharField(
         max_length=128,
         verbose_name="Type de projet",
+=======
+        max_length=256,
+        verbose_name="Nom du projet",
+        null=True,
+        blank=True,
+    )
+    description = models.TextField(
+        max_length=5000,
+        blank=True,
+        null=True,
+    )
+    category = models.CharField(
+        max_length=128,
+        verbose_name="Catégorie",
+>>>>>>> dev2
         choices=(
             ("Back-end", "Back-end"),
             ("Front-end", "Front-end"),
@@ -34,9 +64,14 @@ class Project(models.Model):
         null=True,
         blank=True,
     )
+<<<<<<< HEAD
     created_time = models.DateTimeField(
         auto_now_add=True, verbose_name="Date de création"
     )
+=======
+    created_time = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+>>>>>>> dev2
 
     def __str__(self):
         return self.name
@@ -69,14 +104,27 @@ class Issue(models.Model):
     project = models.ForeignKey(
         Project, on_delete=models.CASCADE, verbose_name="Projet", related_name="issues"
     )
+<<<<<<< HEAD
     name = models.CharField(max_length=256, verbose_name="Nom du problème")
+=======
+    name = models.CharField(
+        max_length=256,
+        verbose_name="Nom",
+        null=True,
+        blank=True,
+    )
+>>>>>>> dev2
     description = models.TextField(max_length=5000, blank=True, null=True)
     status = models.CharField(
         max_length=32,
         verbose_name="Statut",
         default="To Do",
         choices=(
+<<<<<<< HEAD
             ("To DO", "To DO"),
+=======
+            ("To Do", "To Do"),
+>>>>>>> dev2
             ("In Progress", "In Progress"),
             ("Finished", "Finished"),
         ),
@@ -84,12 +132,23 @@ class Issue(models.Model):
     priority = models.CharField(
         max_length=32,
         verbose_name="Priorité",
+<<<<<<< HEAD
         choices=(("LOW", "LOW"), ("MEDIUM", "MEDIUM"), ("HIGH", "HIGH")),
     )
     issue_type = models.CharField(
         max_length=32,
         verbose_name="Balise",
         choices=(("BUG", "BUG"), ("FEATURE", "FEATURE"), ("TASK", "TASK")),
+=======
+        choices=(("Low", "Low"), ("Medium", "Medium"), ("High", "High")),
+    )
+    category = models.CharField(
+        max_length=32,
+        verbose_name="Balise",
+        choices=(("Bug", "Bug"), ("Feature", "Feature"), ("Task", "Task")),
+        null=True,
+        blank=True,
+>>>>>>> dev2
     )
     # ici ce sont les contributeurs d'un projet uniquement qui sont sélectionnable
     assigned_to = models.ForeignKey(
@@ -107,6 +166,7 @@ class Issue(models.Model):
         return self.name
 
 
+<<<<<<< HEAD
 class Comment(models.Model):
     """used to comment an issue"""
 
@@ -137,3 +197,35 @@ class Comment(models.Model):
         self.uuid = self.id
         # self.issue_url= ...
         super().save(*args, **kwargs)
+=======
+# class Comment(models.Model):
+#     """used to comment an issue"""
+
+#     issue = models.ForeignKey(Issue, on_delete=models.CASCADE, related_name="comments")
+
+#     # ici ce sont les contributeurs d'un projet uniquement qui sont sélectionnable
+#     author = models.ForeignKey(
+#         settings.AUTH_USER_MODEL,
+#         on_delete=models.CASCADE,
+#         verbose_name="Auteur",
+#     )
+#     description = models.TextField(max_length=5000, blank=True, null=True)
+
+#     # Il doit aussi donner un lien vers une issue.
+#     issue_url = models.URLField(null=True)
+
+#     # un identifiant unique de type uuid est automatiquement généré.  Ce
+#     # dernier permet de mieux référencer le comment.
+#     uuid = models.IntegerField(null=True)
+#     created_time = models.DateTimeField(
+#         auto_now_add=True, verbose_name="Date de création"
+#     )
+
+#     def __str__(self):
+#         return f"{self.uuid}"
+
+#     def save(self, *args, **kwargs):
+#         self.uuid = self.id
+#         # self.issue_url= ...
+#         super().save(*args, **kwargs)
+>>>>>>> dev2
