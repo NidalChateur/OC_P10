@@ -20,8 +20,10 @@ from project.serializers import (
     ContributorSerializer,
     AdminProjectSerializer,
     AdminContributorSerializer,
+    IssueSerializer,
+    AdminIssueSerializer,
 )
-from project.models import Project, Contributor
+from project.models import Project, Contributor, Issue
 from project.permissions import IsOwnerOrReadOnly, IsAdminAuthenticated
 
 
@@ -106,5 +108,39 @@ class ContributorViewset(ModelViewSet):
         project_id = self.request.GET.get("project_id")
         if project_id:
             queryset = queryset.filter(project=project_id)
+
+        return queryset
+
+
+class AdminIssueViewset(ModelViewSet):
+    serializer_class = AdminIssueSerializer
+    permission_classes = [IsAdminAuthenticated]
+
+    def get_queryset(self):
+        queryset = Issue.objects.all()
+
+        # url filter on Issue.project.name
+        project_name = self.request.GET.get("project_name")
+        if project_name:
+            queryset = queryset.filter(project__name=project_name)
+
+        return queryset
+
+
+class IssueViewset(ModelViewSet):
+    serializer_class = IssueSerializer
+    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
+
+    def get_queryset(self):
+        # queryset = Issue.objects.all()
+        contributed_projects = Project.objects.filter(
+            contributor__contributor=self.request.user, is_active=True
+        )
+        queryset = Issue.objects.filter(project__in=contributed_projects)
+
+        # url filter on Issue.project.name
+        project_name = self.request.GET.get("project_name")
+        if project_name:
+            queryset = queryset.filter(project__name=project_name)
 
         return queryset

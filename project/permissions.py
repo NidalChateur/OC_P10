@@ -22,4 +22,8 @@ class IsOwnerOrReadOnly(BasePermission):
         """Permission in detail view"""
         # Cette méthode vérifie la permission pour les opérations sur un objet individuel (par exemple, update et destroy).
         # Vérifie si l'utilisateur connecté est le propriétaire de l'objet.
-        return obj.author == request.user
+
+        try:
+            return obj.author == request.user
+        except AttributeError:
+            return obj.project.author == request.user

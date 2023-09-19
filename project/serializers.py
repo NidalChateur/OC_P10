@@ -1,14 +1,9 @@
-# from datetime import date
-# from dataclasses import fields
-
-# from pyexpat import model
-# from tabnanny import verbose
-from cProfile import label
+from dataclasses import fields
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+import project
 
-
-from project.models import Project, Contributor
+from project.models import Project, Contributor, Issue
 
 
 class UserContributorSerializer(serializers.ModelSerializer):
@@ -112,6 +107,8 @@ class AdminContributorSerializer(serializers.ModelSerializer):
 
 
 class ContributorSerializer(serializers.ModelSerializer):
+    "only the project author can create a contribution"
+
     project = serializers.SlugRelatedField(
         queryset=[],
         slug_field="name",
@@ -155,3 +152,143 @@ class ContributorSerializer(serializers.ModelSerializer):
         contributor.save()
 
         return contributor
+
+
+class AdminIssueSerializer(serializers.ModelSerializer):
+    author = serializers.SerializerMethodField()
+    project = serializers.SlugRelatedField(
+        queryset=[], slug_field="name", label="Projet"
+    )
+    assigned_to = serializers.SlugRelatedField(
+        queryset=get_user_model().objects.all(),
+        slug_field="username",
+        label="Assigné à",
+    )
+
+    class Meta:
+        model = Issue
+        fields = (
+            "id",
+            "author",
+            "project",
+            "name",
+            "description",
+            "status",
+            "priority",
+            "category",
+            "assigned_to",
+        )
+
+    def get_author(self, instance):
+        """use UserContributorSerializer to display the "author" field"""
+
+        serializer = UserContributorSerializer(instance.author)
+
+        return serializer.data
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+
+        if request and request.user:
+            contributed_projects = Project.objects.filter(
+                contributor__contributor=request.user, is_active=True
+            )
+            self.fields["project"].queryset = contributed_projects
+
+    def create(self, validated_data):
+        request = self.context.get("request")
+        project = validated_data["project"]
+        assigned_user = validated_data["assigned_to"]
+        contributors = (
+            get_user_model()
+            .objects.filter(contributor__project=project)
+            .values_list("username", flat=True)
+        )
+
+        # check if the Issue.assigned_to is a project contributor
+        if not Contributor.objects.filter(contributor=assigned_user, project=project):
+            raise serializers.ValidationError(
+                f"'{assigned_user.username}' n'est pas contributeur au projet '{project.name}'."
+                f" Voici la liste des contributeurs que vous pouvez assigner :"
+                f"{list(contributors)}"
+            )
+
+        validated_data["author"] = request.user
+        issue = Issue(**validated_data)
+        issue.save()
+
+        return issue
+
+
+class IssueSerializer(serializers.ModelSerializer):
+    author = serializers.SerializerMethodField()
+    project = serializers.SlugRelatedField(
+        queryset=[], slug_field="name", label="Projet"
+    )
+    assigned_to = serializers.SlugRelatedField(
+        queryset=get_user_model().objects.all(),
+        slug_field="username",
+        label="Assigné à",
+    )
+
+    class Meta:
+        model = Issue
+        fields = (
+            "id",
+            "author",
+            "project",
+            "name",
+            "description",
+            "status",
+            "priority",
+            "category",
+            "assigned_to",
+        )
+
+    def get_author(self, instance):
+        """use UserContributorSerializer to display the "author" field"""
+
+        serializer = UserContributorSerializer(instance.author)
+
+        return serializer.data
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+
+        if request and request.user:
+            contributed_projects = Project.objects.filter(
+                contributor__contributor=request.user, is_active=True
+            )
+            self.fields["project"].queryset = contributed_projects
+
+    def create(self, validated_data):
+        request = self.context.get("request")
+        project = validated_data["project"]
+        assigned_user = validated_data["assigned_to"]
+        contributors = (
+            get_user_model()
+            .objects.filter(contributor__project=project)
+            .values_list("username", flat=True)
+        )
+
+        # check if the Issue.author is a project contributor
+        if not Contributor.objects.filter(contributor=request.user, project=project):
+            raise serializers.ValidationError(
+                f"Vous n'êtes pas contributeur au projet '{project.name}'."
+            )
+
+        # check if the Issue.assigned_to is a project contributor
+        if not Contributor.objects.filter(contributor=assigned_user, project=project):
+            raise serializers.ValidationError(
+                f"'{assigned_user.username}' n'est pas contributeur au projet '{project.name}'."
+                f" Voici la liste des contributeurs que vous pouvez assigner :"
+                f"{list(contributors)}"
+            )
+
+        validated_data["author"] = request.user
+        issue = Issue(**validated_data)
+        issue.save()
+
+        return issue

@@ -1,3 +1,4 @@
+from unicodedata import category
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.conf import settings
 from django.db import models
@@ -66,55 +67,62 @@ class Contributor(models.Model):
         unique_together = ("contributor", "project")
 
 
-# class Issue(models.Model):
-#     """define a task, a bug or feature in the project"""
+class Issue(models.Model):
+    """define a task, a bug or feature in the project"""
 
-#     # ici ce sont les contributeurs d'un projet uniquement qui sont sélectionnable
-#     author = models.ForeignKey(
-#         settings.AUTH_USER_MODEL,
-#         on_delete=models.CASCADE,
-#         related_name="issue_owner",
-#         verbose_name="Auteur",
-#     )
-#     project = models.ForeignKey(
-#         Project, on_delete=models.CASCADE, verbose_name="Projet", related_name="issues"
-#     )
-#     name = models.CharField(max_length=256, verbose_name="Nom du problème")
-#     description = models.TextField(max_length=5000, blank=True, null=True)
-#     status = models.CharField(
-#         max_length=32,
-#         verbose_name="Statut",
-#         default="To Do",
-#         choices=(
-#             ("To DO", "To DO"),
-#             ("In Progress", "In Progress"),
-#             ("Finished", "Finished"),
-#         ),
-#     )
-#     priority = models.CharField(
-#         max_length=32,
-#         verbose_name="Priorité",
-#         choices=(("LOW", "LOW"), ("MEDIUM", "MEDIUM"), ("HIGH", "HIGH")),
-#     )
-#     issue_type = models.CharField(
-#         max_length=32,
-#         verbose_name="Balise",
-#         choices=(("BUG", "BUG"), ("FEATURE", "FEATURE"), ("TASK", "TASK")),
-#     )
-#     # ici ce sont les contributeurs d'un projet uniquement qui sont sélectionnable
-#     assigned_to = models.ForeignKey(
-#         settings.AUTH_USER_MODEL,
-#         on_delete=models.SET_NULL,
-#         verbose_name="Assigné à",
-#         null=True,
-#         blank=True,
-#     )
-#     created_time = models.DateTimeField(
-#         auto_now_add=True, verbose_name="Date de création"
-#     )
+    # ici ce sont les contributeurs d'un projet uniquement qui sont sélectionnable
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="issue_owner",
+        verbose_name="Auteur",
+    )
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, verbose_name="Projet", related_name="issues"
+    )
+    name = models.CharField(
+        max_length=256,
+        verbose_name="Nom",
+        null=True,
+        blank=True,
+    )
+    description = models.TextField(max_length=5000, blank=True, null=True)
+    status = models.CharField(
+        max_length=32,
+        verbose_name="Statut",
+        default="To Do",
+        choices=(
+            ("To Do", "To Do"),
+            ("In Progress", "In Progress"),
+            ("Finished", "Finished"),
+        ),
+    )
+    priority = models.CharField(
+        max_length=32,
+        verbose_name="Priorité",
+        choices=(("Low", "Low"), ("Medium", "Medium"), ("High", "High")),
+    )
+    category = models.CharField(
+        max_length=32,
+        verbose_name="Balise",
+        choices=(("Bug", "Bug"), ("Feature", "Feature"), ("Task", "Task")),
+        null=True,
+        blank=True,
+    )
+    # ici ce sont les contributeurs d'un projet uniquement qui sont sélectionnable
+    assigned_to = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        verbose_name="Assigné à",
+        null=True,
+        blank=True,
+    )
+    created_time = models.DateTimeField(
+        auto_now_add=True, verbose_name="Date de création"
+    )
 
-#     def __str__(self):
-#         return self.name
+    def __str__(self):
+        return self.name
 
 
 # class Comment(models.Model):
