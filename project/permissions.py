@@ -19,6 +19,7 @@ class IsOwnerOrReadOnly(BasePermission):
         return True  # Vous pouvez personnaliser cette logique selon vos besoins.
 
     def has_object_permission(self, request, view, obj):
+        """Permission in detail view"""
         # Cette méthode vérifie la permission pour les opérations sur un objet individuel (par exemple, update et destroy).
         # Vérifie si l'utilisateur connecté est le propriétaire de l'objet.
         return obj.author == request.user

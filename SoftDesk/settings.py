@@ -151,9 +151,11 @@ MEDIA_ROOT = BASE_DIR / "media/"
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "PAGE_SIZE": 100,
-    # to be able to use the JWT authentication class
     "DEFAULT_AUTHENTICATION_CLASSES": (
+        # to use the JWT authentication class
         "rest_framework_simplejwt.authentication.JWTAuthentication",
+        # to use authentication class in viewset
+        "rest_framework.authentication.SessionAuthentication",
     ),
 }
 

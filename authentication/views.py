@@ -8,7 +8,7 @@ from rest_framework import status
 from django.contrib.auth import get_user_model
 
 from authentication.serializers import (
-    UserSerializer,
+    # UserSerializer,
     UserNoPasswordSerializer,
     AdminUserSerializer,
 )
@@ -20,10 +20,15 @@ class UserViewset(ModelViewSet):
     permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
 
     def get_queryset(self):
+        # queryset = get_user_model().objects.all()
+        # return queryset
         queryset = get_user_model().objects.filter(
             can_data_be_shared=True, is_active=True
         )
         # queryset = get_user_model().objects.all()
+
+        # filter the queryset with the "username" argument in the url
+        # http://127.0.0.1:8000/api/user/?username=alpha
         username = self.request.GET.get("username")
         if username:
             queryset = queryset.filter(username=username)
@@ -37,6 +42,9 @@ class AdminUserViewset(ModelViewSet):
 
     def get_queryset(self):
         queryset = get_user_model().objects.all()
+
+        # filter the queryset with the "username" argument in the url
+        # http://127.0.0.1:8000/api/user/?username=alpha
         username = self.request.GET.get("username")
         if username:
             queryset = queryset.filter(username=username)

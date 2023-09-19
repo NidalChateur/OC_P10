@@ -7,7 +7,7 @@ from PIL import Image
 from datetime import date
 
 
-# retirer null=True et blank=True
+# retirer null=True et blank=True avant livraison
 class User(AbstractUser):
     WIDTH = 200
 
@@ -38,7 +38,7 @@ class User(AbstractUser):
     )
     # vue admin django http://127.0.0.1:8000/admin suffisant ?
     # créer une vue admin et permettre à l'admin de désactiver l'utilisateur
-    # active=models.BooleanField(default=True)
+    # is_active=models.BooleanField(default=True)
 
     def __str__(self):
         return f"{str(self.username).capitalize()}"
