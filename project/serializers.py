@@ -15,31 +15,21 @@ class UserContributorSerializer(serializers.ModelSerializer):
 
 
 class AdminProjectSerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(
-        queryset=get_user_model().objects.all(), slug_field="username", label="Auteur"
-    )
+
     contributors = serializers.SerializerMethodField()
+    issues = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
-        fields = ("id", "author", "contributors", "name", "description", "category")
-
-    def get_contributors(self, instance):
-        """use UserContributorSerializer to display the "contributors" field"""
-
-        queryset = instance.contributors.all()
-        serializer = UserContributorSerializer(queryset, many=True)
-
-        return serializer.data
-
-
-class ProjectSerializer(serializers.ModelSerializer):
-    contributors = serializers.SerializerMethodField()
-    author = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Project
-        fields = ("id", "author", "contributors", "name", "description", "category")
+        fields = (
+            "id",
+            "author",
+            "contributors",
+            "name",
+            "description",
+            "category",
+            "issues",
+        )
 
     def get_author(self, instance):
         """use UserContributorSerializer to display the "author" field"""
@@ -57,8 +47,87 @@ class ProjectSerializer(serializers.ModelSerializer):
 
         return serializer.data
 
+    def get_issues(self, instance):
+        """use IssueSerializer to display the "issues" field"""
+
+        queryset = instance.issues.all()
+        serializer = IssueSerializer(queryset, many=True)
+
+        return serializer.data
+
     def create(self, validated_data):
-        """create a Project instance and a Contributor instance and
+        """create a Project instance and a Contributor instance then
+        set the connected user as author and contributor"""
+
+        request = self.context.get("request")
+        if request and request.user and request.user.is_authenticated:
+            # set the authenticated user as the author
+            # validated_data["author"] = request.user
+
+            # check if the project exists
+            if Project.objects.filter(name=validated_data["name"]):
+                raise serializers.ValidationError("Un projet avec ce nom existe déjà.")
+
+            # create the project
+            project = Project(**validated_data)
+            project.save()
+
+            # create the contribution of the author
+            contributor = Contributor()
+            contributor.contributor = project.author
+            contributor.project = project
+            contributor.save()
+
+            return project
+
+        raise serializers.ValidationError(
+            "L'utilisateur doit être connecté pour créer un projet."
+        )
+
+
+class ProjectSerializer(serializers.ModelSerializer):
+    contributors = serializers.SerializerMethodField()
+    author = serializers.SerializerMethodField()
+    issues = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Project
+        fields = (
+            "id",
+            "author",
+            "contributors",
+            "name",
+            "description",
+            "category",
+            "issues",
+        )
+
+    def get_author(self, instance):
+        """use UserContributorSerializer to display the "author" field"""
+
+        queryset = instance.author
+        serializer = UserContributorSerializer(queryset)
+
+        return serializer.data
+
+    def get_contributors(self, instance):
+        """use UserContributorSerializer to display the "contributors" field"""
+
+        queryset = instance.contributors.all()
+        serializer = UserContributorSerializer(queryset, many=True)
+
+        return serializer.data
+
+    def get_issues(self, instance):
+        """use IssueSerializer to display the "issues" field"""
+
+        queryset = instance.issues.all()
+        serializer = IssueSerializer(queryset, many=True)
+
+        return serializer.data
+
+    def create(self, validated_data):
+        """create a Project instance and a Contributor instance then
         set the connected user as author and contributor"""
 
         request = self.context.get("request")
