@@ -1,0 +1,6 @@
+# python.exe -m pip install --upgrade pip
+Django
+djangorestframework
+requests
+djangorestframework-simplejwt
+Pillow
