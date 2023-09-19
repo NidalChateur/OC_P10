@@ -21,10 +21,19 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
+# vue permettant generic JWT permettant d'obtenir et de rafraîchir un token
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
 urlpatterns = [
     path("admin/", admin.site.urls),
+    # inutile ?
+    path("api-auth/", include("rest_framework.urls")),
+    # url to get a token
+    path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    # url to refresh a token
+    path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("", include("authentication.urls")),
-    # path("", include("project.urls")),
+    path("", include("project.urls")),
 ]
 
 # images url configuration
