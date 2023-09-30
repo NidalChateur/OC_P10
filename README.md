@@ -93,6 +93,15 @@ Cette application Django exécutable localement peut être installée en suivant
 5. Installez les dépendances du projet avec la commande `$ pip install -r requirements.txt`
 6. Démarrer le serveur avec `$ python manage.py runserver`
 
-Lorsque le serveur fonctionne, après l'étape 6 de la procédure, l'application peut être consultée à partir de l'url [http://127.0.0.1:8000/].
+### Installation et exécution de l'application avec venv, pip et poetry
 
-Les étapes 1 à 6 ne sont requises que pour l'installation initiale. Pour les lancements ultérieurs du serveur de l'application, il suffit d'exécuter les étapes 4 et 6 à partir du répertoire racine du projet.
+1. Cloner ce dépôt de code à l'aide de la commande `$ git clone https://github.com/NidalChateur/OC_P10_SOFTDESK.git` (vous pouvez également télécharger le code [en temps qu'archive zip](https://github.com/NidalChateur/OC_P10_SOFTDESK/archive/refs/heads/main.zip))
+2. Rendez-vous depuis un terminal à la racine du répertoire OC_P10_SOFTDESK avec la commande `$ cd OC_P10_SOFTDESK`
+3. Créer un environnement virtuel pour le projet avec `$ python -m venv env` sous windows ou `$ python3 -m venv env` sous macos ou linux.
+4. Activez l'environnement virtuel avec `$ env\Scripts\activate` sous windows ou `$ source env/bin/activate` sous macos ou linux.
+5. Installez poetry avec la commande `$ pip install poetry`
+6. Installez les dépendances du projet avec la commande`$ poetry install`
+7. Démarrer le serveur avec `$ poetry run python manage.py runserver`
+Lorsque le serveur fonctionne, après l'étape 7 de la procédure, l'application peut être consultée à partir de l'url [http://127.0.0.1:8000/].
+
+Les étapes 1 à 7 ne sont requises que pour l'installation initiale. Pour les lancements ultérieurs du serveur de l'application, il suffit d'exécuter les étapes 4 et 7 à partir du répertoire racine du projet.
