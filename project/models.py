@@ -1,38 +1,29 @@
-from unicodedata import category
-from django.core.validators import MinValueValidator, MaxValueValidator
 from django.conf import settings
 from django.db import models
-from django.utils import timezone
 from django.utils.text import slugify
 
-from PIL import Image
 
-
-# retirer null=True et blank=True
 class Project(models.Model):
     author = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         verbose_name="Auteur",
-        null=True,
-        blank=True,
     )
     contributors = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
         through="Contributor",
         related_name="contributions",
-        blank=True,
     )
     name = models.CharField(
         max_length=256,
         verbose_name="Nom du projet",
-        null=True,
-        blank=True,
+        help_text="Donnez un nom à votre projet",
     )
     description = models.TextField(
         max_length=5000,
         blank=True,
         null=True,
+        help_text="Description facultative",
     )
     category = models.CharField(
         max_length=128,
@@ -43,25 +34,30 @@ class Project(models.Model):
             ("iOS", "iOS"),
             ("Android", "Android"),
         ),
-        null=True,
-        blank=True,
     )
     created_time = models.DateTimeField(auto_now_add=True)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Précise si le projet doit être considéré comme actif. Décochez ceci plutôt que de supprimer le projet.",
+        verbose_name="Actif",
+    )
+    slug_name = models.SlugField(max_length=256, null=True)
 
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        """save the slug_name"""
+
+        self.slug_name = slugify(self.name)
+        super().save(*args, **kwargs)
+
 
 class Contributor(models.Model):
-    """Seules les contributeurs d'un projets peuvent accéder au projet ainsi qu'à ses issues et ses comments
-    - Le contributeur d'un projet peut créer des issues afin de planifier une nouvelle fonctionnalité ou régler un bug
-    - Le contributeur"""
+    """Project contributors"""
 
     contributor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    # champ commentaire
-    # contribution = models.CharField(max_length=255, blank=True)
 
     class Meta:
         unique_together = ("contributor", "project")
@@ -70,7 +66,7 @@ class Contributor(models.Model):
 class Issue(models.Model):
     """define a task, a bug or feature in the project"""
 
-    # ici ce sont les contributeurs d'un projet uniquement qui sont sélectionnable
+    # only a project contributor can create an issue
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -78,15 +74,22 @@ class Issue(models.Model):
         verbose_name="Auteur",
     )
     project = models.ForeignKey(
-        Project, on_delete=models.CASCADE, verbose_name="Projet", related_name="issues"
+        Project,
+        on_delete=models.CASCADE,
+        verbose_name="Projet",
+        related_name="issues",
     )
     name = models.CharField(
         max_length=256,
-        verbose_name="Nom",
-        null=True,
-        blank=True,
+        verbose_name="Nom de l'issue",
+        help_text="Donnez un nom à votre issue",
     )
-    description = models.TextField(max_length=5000, blank=True, null=True)
+    description = models.TextField(
+        max_length=5000,
+        blank=True,
+        null=True,
+        help_text="Description facultative",
+    )
     status = models.CharField(
         max_length=32,
         verbose_name="Statut",
@@ -106,16 +109,13 @@ class Issue(models.Model):
         max_length=32,
         verbose_name="Balise",
         choices=(("Bug", "Bug"), ("Feature", "Feature"), ("Task", "Task")),
-        null=True,
-        blank=True,
     )
-    # ici ce sont les contributeurs d'un projet uniquement qui sont sélectionnable
+    # only a project contributor can be assigned to an issue
     assigned_to = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         verbose_name="Assigné à",
         null=True,
-        blank=True,
     )
     created_time = models.DateTimeField(
         auto_now_add=True, verbose_name="Date de création"
@@ -125,33 +125,30 @@ class Issue(models.Model):
         return self.name
 
 
-# class Comment(models.Model):
-#     """used to comment an issue"""
+class Comment(models.Model):
+    """used to comment an issue"""
 
-#     issue = models.ForeignKey(Issue, on_delete=models.CASCADE, related_name="comments")
+    issue = models.ForeignKey(Issue, on_delete=models.CASCADE, related_name="comments")
 
-#     # ici ce sont les contributeurs d'un projet uniquement qui sont sélectionnable
-#     author = models.ForeignKey(
-#         settings.AUTH_USER_MODEL,
-#         on_delete=models.CASCADE,
-#         verbose_name="Auteur",
-#     )
-#     description = models.TextField(max_length=5000, blank=True, null=True)
+    # only a project contributor can comment an issue
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        verbose_name="Auteur",
+    )
+    description = models.TextField(max_length=5000)
 
-#     # Il doit aussi donner un lien vers une issue.
-#     issue_url = models.URLField(null=True)
+    issue_url = models.URLField(null=True)
 
-#     # un identifiant unique de type uuid est automatiquement généré.  Ce
-#     # dernier permet de mieux référencer le comment.
-#     uuid = models.IntegerField(null=True)
-#     created_time = models.DateTimeField(
-#         auto_now_add=True, verbose_name="Date de création"
-#     )
+    # uuid is the unique comment id
+    uuid = models.IntegerField(null=True)
+    created_time = models.DateTimeField(
+        auto_now_add=True, verbose_name="Date de création"
+    )
 
-#     def __str__(self):
-#         return f"{self.uuid}"
+    def __str__(self):
+        return f"{self.uuid}"
 
-#     def save(self, *args, **kwargs):
-#         self.uuid = self.id
-#         # self.issue_url= ...
-#         super().save(*args, **kwargs)
+    def save(self, *args, **kwargs):
+        self.issue_url = f"http://127.0.0.1:8000/api/issue/?issue_id={self.issue.id}"
+        super().save(*args, **kwargs)

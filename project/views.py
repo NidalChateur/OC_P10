@@ -1,84 +1,72 @@
-"""Seules les contributeurs d'un projets peuvent accéder au projet ainsi qu'à ses issues et ses comments
-    - Le contributeur d'un projet peut créer des issues afin de planifier une nouvelle fonctionnalité ou régler un bug
-    - Le contributeur
-    
-    - L’auteur d’une ressource peut modifier ou supprimer cette ressource. Les autres
-utilisateurs ne peuvent que lire la ressource.
-"""
-from django.shortcuts import render
-from urllib import request
-from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.decorators import action
+from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
-from rest_framework import status
-from django.contrib.auth import get_user_model
 
 from project.serializers import (
     ProjectSerializer,
     ContributorSerializer,
     AdminProjectSerializer,
     AdminContributorSerializer,
-    IssueSerializer,
     AdminIssueSerializer,
+    IssueSerializer,
+    AdminCommentSerializer,
+    CommentSerializer,
 )
-from project.models import Project, Contributor, Issue
-from project.permissions import IsOwnerOrReadOnly, IsAdminAuthenticated
-
-
-class MultipleSerializerMixin:
-    """utilise serializer detail si l'utilisateur consulte la vue de détail"""
-
-    detail_serializer_class = None
-
-    def get_serializer_class(self):
-        # retrieve est le détail
-        if self.action == "retrieve" and self.detail_serializer_class is not None:
-            return self.detail_serializer_class
-        return super().get_serializer_class()
+from project.models import Project, Contributor, Issue, Comment
+from project.permissions import IsOwnerOrReadOnly
 
 
 class AdminProjectViewset(ModelViewSet):
     serializer_class = AdminProjectSerializer
-    permission_classes = [IsAdminAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
     def get_queryset(self):
         queryset = Project.objects.all()
 
         # url filter on Project.category
+        # http://127.0.0.1:8000/api/admin/project/?category=xxx
         category = self.request.GET.get("category")
         if category:
             queryset = queryset.filter(category=category)
+
+        # url filter on Project.name
+        # http://127.0.0.1:8000/api/admin/project/?project_name=xxx
+        project_name = self.request.GET.get("project_name")
+        if project_name:
+            queryset = queryset.filter(name=project_name)
 
         return queryset
 
 
 class ProjectViewset(ModelViewSet):
-    """The project contributors can read the project but only the author can edit it !"""
+    """The project contributors can read the project but only the author can edit it"""
 
     serializer_class = ProjectSerializer
     permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
 
     def get_queryset(self):
-        # queryset = Project.objects.all()
-        # return queryset
-
+        # select only projects where the connected user is a contributor
         queryset = Project.objects.filter(
             contributor__contributor=self.request.user, is_active=True
         )
 
         # url filter on Project.category
+        # http://127.0.0.1:8000/api/project/?category=xxx
         category = self.request.GET.get("category")
         if category:
             queryset = queryset.filter(category=category)
+
+        # url filter on Project.name
+        # http://127.0.0.1:8000/api/project/?project_name=xxx
+        project_name = self.request.GET.get("project_name")
+        if project_name:
+            queryset = queryset.filter(name=project_name)
 
         return queryset
 
 
 class AdminContributorViewset(ModelViewSet):
     serializer_class = AdminContributorSerializer
-    permission_classes = [IsAdminAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
     def get_queryset(self):
         queryset = Contributor.objects.all()
@@ -92,17 +80,17 @@ class AdminContributorViewset(ModelViewSet):
 
 
 class ContributorViewset(ModelViewSet):
-    """Only a project author can create a contribution !"""
+    """Only a project author can create a contribution"""
 
     serializer_class = ContributorSerializer
     permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
 
     def get_queryset(self):
-        # queryset = Contributor.objects.all()
-        # return queryset
+        # select only contributors to the project where the connected user is the author
         queryset = Contributor.objects.filter(
             project__author=self.request.user, project__is_active=True
         )
+        # queryset = Contributor.objects.all()
 
         # url filter on Contributor.id
         project_id = self.request.GET.get("project_id")
@@ -113,34 +101,79 @@ class ContributorViewset(ModelViewSet):
 
 
 class AdminIssueViewset(ModelViewSet):
+    """only a project contributor can be assigned and act as the issue author"""
+
     serializer_class = AdminIssueSerializer
-    permission_classes = [IsAdminAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
     def get_queryset(self):
         queryset = Issue.objects.all()
 
-        # url filter on Issue.project.name
-        project_name = self.request.GET.get("project_name")
-        if project_name:
-            queryset = queryset.filter(project__name=project_name)
+        # url filter on Issue.id
+        issue_id = self.request.GET.get("issue_id")
+        if issue_id:
+            queryset = queryset.filter(id=issue_id)
 
         return queryset
 
 
 class IssueViewset(ModelViewSet):
+    """only a project contributor can be assigned and act as the issue author"""
+
     serializer_class = IssueSerializer
     permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
 
     def get_queryset(self):
-        # queryset = Issue.objects.all()
+        # select only issues where the connected user is a project contributor
         contributed_projects = Project.objects.filter(
             contributor__contributor=self.request.user, is_active=True
         )
         queryset = Issue.objects.filter(project__in=contributed_projects)
 
-        # url filter on Issue.project.name
-        project_name = self.request.GET.get("project_name")
-        if project_name:
-            queryset = queryset.filter(project__name=project_name)
+        # url filter on Issue.id
+        issue_id = self.request.GET.get("issue_id")
+        if issue_id:
+            queryset = queryset.filter(id=issue_id)
+
+        return queryset
+
+
+class AdminCommentViewset(ModelViewSet):
+    """only a project contributor can create a comment on an issue"""
+
+    serializer_class = AdminCommentSerializer
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def get_queryset(self):
+        queryset = Comment.objects.all()
+
+        # url filter on Comment.id
+        comment_id = self.request.GET.get("comment_id")
+        if comment_id:
+            queryset = queryset.filter(id=comment_id)
+
+        return queryset
+
+
+class CommentViewset(ModelViewSet):
+    """only a project contributor can create a comment on an issue"""
+
+    serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
+
+    def get_queryset(self):
+        # get the comments of contributed projects
+        contributed_projects = Project.objects.filter(
+            contributor__contributor=self.request.user, is_active=True
+        )
+        contributed_projects_issues = Issue.objects.filter(
+            project__in=contributed_projects
+        )
+        queryset = Comment.objects.filter(issue__in=contributed_projects_issues)
+
+        # url filter on Comment.id
+        comment_id = self.request.GET.get("comment_id")
+        if comment_id:
+            queryset = queryset.filter(id=comment_id)
 
         return queryset

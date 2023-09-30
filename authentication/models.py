@@ -1,44 +1,38 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser, Group, Permission
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.contrib.auth.models import AbstractUser
+
 
 from PIL import Image
 
-from datetime import date
 
-
-# retirer null=True et blank=True avant livraison
 class User(AbstractUser):
     WIDTH = 200
 
+    # to automatically set 'email', 'first_name', 'last_name' as required
+    email = models.EmailField()
+    first_name = models.CharField(max_length=128, verbose_name="Prénom")
+    last_name = models.CharField(max_length=128, verbose_name="Nom")
     birthdate = models.DateField(
         verbose_name="Date de naissance",
-        null=True,
-        blank=True,
+        help_text="Vous devez avoir plus de 15 ans.",
     )
-    # if "can_be_contacted" is False : the "email" field is hidden
+    # if "can_be_contacted" is False : the "email" field is hidden to other users
     can_be_contacted = models.BooleanField(
-        null=True,
-        blank=True,
         verbose_name="Peux être contacté",
         choices=((True, "Oui"), (False, "Non")),
+        help_text="Votre email sera masquée aux autres utilisateurs si vous choisissez 'NON'.",
     )
-    # can_data_be_shared is True only if age > 15
-    # if "can_data_be_shared" is False : the user data are hidden
+    # if "can_data_be_shared" is False : the user data are hidden to other users
     can_data_be_shared = models.BooleanField(
-        null=True,
-        blank=True,
         verbose_name="Partager ses données",
         choices=((True, "Oui"), (False, "Non")),
+        help_text="Votre profil sera masqué aux autres utilisateurs et vos informations non partagées si vous choisissez 'NON'.",
     )
     image = models.ImageField(
         verbose_name="Photo de profil",
         null=True,
         blank=True,
     )
-    # vue admin django http://127.0.0.1:8000/admin suffisant ?
-    # créer une vue admin et permettre à l'admin de désactiver l'utilisateur
-    # is_active=models.BooleanField(default=True)
 
     def __str__(self):
         return f"{str(self.username).capitalize()}"
