@@ -8,7 +8,7 @@ Notre nouvelle application SoftDesk met à disposition une API RESTful permettan
 
 Ces endpoints fournissent des informations à partir d'urls interrogeables à l'aide d'un client HTTP graphique comme un navigateur web ou postman, ou d'un client HTTP programmatique comme requests en python ou fetch/axios en javascript.
 
-Ces endpoints supportent les requêtes HTTP utilisant la méthode GET et POST. Seuls les auteurs des ressources(compte utilisateur, projet, issue, comment) peuvent utiliser avoir recours aux méthodes PUT et DELETE.
+Ces endpoints supportent les requêtes HTTP utilisant la méthode GET et POST. Seuls les auteurs des ressources (compte utilisateur, projet, issue, comment) peuvent utiliser avoir recours aux méthodes PUT et DELETE.
 
 
 
@@ -18,7 +18,7 @@ L’application présente quatre cas d’utilisation :
 
 1. Créer un projet ;
 2. Ajouter des contributeurs au projet ;
-3. Créer une issue(bug, tache ou fonctionnalité à réaliser) dans le projet et l'assigner à un contributeur ;
+3. Créer une issue (bug, tache ou fonctionnalité à réaliser) dans le projet et l'assigner à un contributeur ;
 4. Créer un commentaire sur une issue pour faire remonter des informations importantes à tous les contributeurs du projet ;
 
 ## Les endpoints utilisateurs
@@ -35,7 +35,7 @@ L’application présente quatre cas d’utilisation :
 
 ### Ressource Project
 
-0. Seul l'auteur du projet peut mettre à jour ou supprimer le projet (PUT ou DELETE). Seuls les contributeurs du projets peuvent lire les données du projet (GET).
+0. Seul l'auteur du projet peut mettre à jour ou supprimer le projet (PUT ou DELETE). Seuls les contributeurs du projet peuvent lire les données du projet (GET).
 
 1. http://127.0.0.1:8000/api/project/ : Fourni la liste des projets aux contributeurs (GET). Permet également la création de projet (POST).
 
@@ -53,7 +53,7 @@ L’application présente quatre cas d’utilisation :
 
 0. Seuls les contributeurs d'un projet peuvent consulter les issues de ce dernier (GET) ou créer une issue (POST) liée à ce projet. Seul l'auteur d'une Issue peut modifier ou supprimer (PUT ou DELETE) son issue.
 
-1. http://127.0.0.1:8000/api/issue/ : fourni la liste des issues liées aux projets dont l'utilisateur connecté est contributeur (GET). Permet de créer une issue liée à un des  projets dont l'utilisateur connecté est contributeur (POST).
+1. http://127.0.0.1:8000/api/issue/ : fourni la liste des issues liées aux projets dont l'utilisateur connecté est contributeur (GET). Permet de créer une issue liée à un des projets dont l'utilisateur connecté est contributeur (POST).
 
 2. http://127.0.0.1:8000/api/issue/issue.id : permet de consulter (GET) la vue détaillée et de mettre à jour ou supprimer la ressource (PUT ou DELETE). 
 
@@ -61,7 +61,7 @@ L’application présente quatre cas d’utilisation :
 
 0. Seuls les contributeurs d'un projet peuvent consulter les comment sur les issues (GET) ou créer un comment sur une issue (POST) liée à ce projet. Seul l'auteur d'un comment peut modifier ou supprimer (PUT ou DELETE) son comment.
 
-1. http://127.0.0.1:8000/api/comment/ : fourni la liste des comments liées aux projets dont l'utilisateur connecté est contributeur (GET). Permet de créer un comment sur une issue liée à un des  projets dont l'utilisateur connecté est contributeur (POST).
+1. http://127.0.0.1:8000/api/comment/ : fourni la liste des comments liées aux projets dont l'utilisateur connecté est contributeur (GET). Permet de créer un comment sur une issue liée à un des projets dont l'utilisateur connecté est contributeur (POST).
 
 2. http://127.0.0.1:8000/api/comment/comment.id : permet de consulter (GET) la vue détaillée et de mettre à jour ou supprimer la ressource (PUT ou DELETE). 
 
@@ -95,4 +95,4 @@ Cette application Django exécutable localement peut être installée en suivant
 
 Lorsque le serveur fonctionne, après l'étape 6 de la procédure, l'application peut être consultée à partir de l'url [http://127.0.0.1:8000/].
 
-Les étapes 1 à 6 ne sont requises que pout l'installation initiale. Pour les lancements ultérieurs du serveur de l'application, il suffit d'exécuter les étapes 4 et 6 à partir du répertoire racine du projet.
+Les étapes 1 à 6 ne sont requises que pour l'installation initiale. Pour les lancements ultérieurs du serveur de l'application, il suffit d'exécuter les étapes 4 et 6 à partir du répertoire racine du projet.
