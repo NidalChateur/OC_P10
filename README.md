@@ -49,7 +49,7 @@ L’application présente quatre cas d’utilisation :
 
 2. http://127.0.0.1:8000/api/contributor/contributor.id : permet de consulter (GET) la vue détaillée et de mettre à jour ou supprimer la ressource (PUT ou DELETE). 
 
-## Ressource Issue
+### Ressource Issue
 
 0. Seuls les contributeurs d'un projet peuvent consulter les issues de ce dernier (GET) ou créer une issue (POST) liée à ce projet. Seul l'auteur d'une Issue peut modifier ou supprimer (PUT ou DELETE) son issue.
 
@@ -57,7 +57,7 @@ L’application présente quatre cas d’utilisation :
 
 2. http://127.0.0.1:8000/api/issue/issue.id : permet de consulter (GET) la vue détaillée et de mettre à jour ou supprimer la ressource (PUT ou DELETE). 
 
-## Ressource Comment
+### Ressource Comment
 
 0. Seuls les contributeurs d'un projet peuvent consulter les comment sur les issues (GET) ou créer un comment sur une issue (POST) liée à ce projet. Seul l'auteur d'un comment peut modifier ou supprimer (PUT ou DELETE) son comment.
 
