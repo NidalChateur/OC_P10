@@ -3,6 +3,12 @@ from django.db import models
 from django.utils.text import slugify
 
 
+HELP_TEXT = (
+    "Précise si le projet doit être considéré comme actif."
+    + " Décochez ceci plutôt que de supprimer le projet."
+)
+
+
 class Project(models.Model):
     author = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
@@ -38,7 +44,7 @@ class Project(models.Model):
     created_time = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(
         default=True,
-        help_text="Précise si le projet doit être considéré comme actif. Décochez ceci plutôt que de supprimer le projet.",
+        help_text=HELP_TEXT,
         verbose_name="Actif",
     )
     slug_name = models.SlugField(max_length=256, null=True)

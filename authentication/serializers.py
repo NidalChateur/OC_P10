@@ -91,7 +91,7 @@ class UserListSerializer(serializers.ModelSerializer):
             ]
             if any(check_list):
                 raise serializers.ValidationError(
-                    f"Votre mot de passe ne peut pas trop ressembler à vos autres informations personnelles."
+                    "Votre mot de passe ne peut pas trop ressembler à vos autres informations personnelles."
                 )
 
             return data

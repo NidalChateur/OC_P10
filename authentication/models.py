@@ -4,6 +4,11 @@ from django.contrib.auth.models import AbstractUser
 
 from PIL import Image
 
+HELP_TEXT = (
+    "Votre profil sera masqué aux autres utilisateurs et vos informations "
+    + "non partagées si vous choisissez 'NON'."
+)
+
 
 class User(AbstractUser):
     WIDTH = 200
@@ -26,7 +31,7 @@ class User(AbstractUser):
     can_data_be_shared = models.BooleanField(
         verbose_name="Partager ses données",
         choices=((True, "Oui"), (False, "Non")),
-        help_text="Votre profil sera masqué aux autres utilisateurs et vos informations non partagées si vous choisissez 'NON'.",
+        help_text=HELP_TEXT,
     )
     image = models.ImageField(
         verbose_name="Photo de profil",

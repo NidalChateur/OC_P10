@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from django.utils.text import slugify
 
 from project.models import Project, Contributor, Issue, Comment
 
@@ -63,17 +62,14 @@ class AdminProjectSerializer(DateTimeMixin, serializers.ModelSerializer):
 
         return serializer.data
 
-    def validate(self, data):
-        """check if the project exists"""
-
-        if Project.objects.filter(slug_name=slugify(data["name"])):
-            raise serializers.ValidationError("Un projet avec ce nom existe déjà.")
-
-        return data
-
     def create(self, validated_data):
         """create a Project instance and a Contributor instance then
         set the connected user as author and contributor"""
+
+        try:
+            validated_data["author"]
+        except KeyError:
+            validated_data["author"] = self.context.get("request").user
 
         project = Project(**validated_data)
         project.save()
@@ -110,27 +106,6 @@ class ProjectSerializer(AdminProjectSerializer):
         serializer = UserContributorSerializer(queryset)
 
         return serializer.data
-
-    def create(self, validated_data):
-        """create a Project instance and a Contributor instance then
-        set the connected user as author and contributor"""
-
-        user = self.context.get("request").user
-
-        # set the authenticated user as the author
-        validated_data["author"] = user
-
-        # create the project
-        project = Project(**validated_data)
-        project.save()
-
-        # create the contribution of the author
-        contributor = Contributor()
-        contributor.contributor = project.author
-        contributor.project = project
-        contributor.save()
-
-        return project
 
 
 class AdminContributorSerializer(serializers.ModelSerializer):
@@ -350,6 +325,8 @@ class AdminCommentSerializer(DateTimeMixin, serializers.ModelSerializer):
         )
 
     def validate(self, data):
+        """test if the author is a project contributor"""
+
         try:
             author = data["author"]
         except KeyError:
@@ -369,7 +346,6 @@ class AdminCommentSerializer(DateTimeMixin, serializers.ModelSerializer):
         """create the comment instance and set the uuid attribute and
         the connected user as author"""
 
-        validated_data["author"]
         try:
             validated_data["author"]
         except KeyError:

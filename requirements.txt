@@ -4,3 +4,5 @@ djangorestframework
 requests
 djangorestframework-simplejwt
 Pillow
+flake8
+flake8-html
